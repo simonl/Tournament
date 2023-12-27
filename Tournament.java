@@ -8,8 +8,8 @@ public class Tournament
         Random rand = new Random();
         int numberOfRounds = 190 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
-        competitor.add(new Cooperation()); competitor.add(new RandomMove());
-        competitor.add(new Selfish()); competitor.add(new TitForTat());
+        competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
+        competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
         int[][] resultTable = new int[competitor.size()][competitor.size() + 1];
         for (int i = 0; i < resultTable.length; ++i)
         {
