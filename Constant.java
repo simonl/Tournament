@@ -1,3 +1,5 @@
+//This class always return the same thing.
+//It is a abstraction of Cooperation and Selfish
 public final class Constant extends Strategy
 {
     byte action;

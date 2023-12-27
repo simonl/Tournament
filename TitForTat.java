@@ -19,6 +19,6 @@ public final class TitForTat extends Strategy
     }
     public String Name()
     {
-        return "TitForThat";
+        return "TitForTat";
     }
 }
