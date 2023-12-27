@@ -1,4 +1,6 @@
-abstract class Strategy
+package domain.logic;
+
+public abstract class Strategy
 {
     // Previous move can receive 3 different imput
     // 0 the opponent cooperated on the previous move
