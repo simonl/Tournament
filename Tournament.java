@@ -22,13 +22,6 @@ public class Tournament
                 resultTable[j][resultTable.length] += result.y;
             }
         }
-        /*for (int i = 0; i < resultTable.length; ++i)
-        {
-            for (int j = 0; j < resultTable.length; ++j)
-            {
-
-            }
-        }*/
         for (int i = 0; i < resultTable.length; ++i)
         {
             int total = resultTable[i][resultTable.length] - resultTable[i][i];
