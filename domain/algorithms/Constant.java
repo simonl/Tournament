@@ -1,5 +1,9 @@
+package domain.algorithms;
 //This class always return the same thing.
 //It is a abstraction of Cooperation and Selfish
+
+import domain.logic.Strategy;
+
 public final class Constant extends Strategy
 {
     byte action;
