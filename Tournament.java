@@ -6,7 +6,7 @@ public class Tournament
     public static void main(String[] args)
     {
         Random rand = new Random();
-        int numberOfRounds = 190 + rand.nextInt(11);
+        int numberOfRounds = 195 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
@@ -16,16 +16,25 @@ public class Tournament
             for (int j = 0; j <= i; ++j)
             {
                 Point result = fight(numberOfRounds, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
-                resultTable[i][j] = result.x;
-                resultTable[j][i] = result.y;
-                resultTable[i][resultTable.length] += result.x;
-                resultTable[j][resultTable.length] += result.y;
+                if (i != j)
+                {
+                    resultTable[i][j] = result.x;
+                    resultTable[j][i] = result.y;
+                    resultTable[i][resultTable.length] += result.x;
+                    resultTable[j][resultTable.length] += result.y;
+                }
+                else
+                {
+                    int average = (result.x + result.y)/2;
+                    resultTable[i][i] = average;
+                    resultTable[j][resultTable.length] += average;
+                }
+                
             }
         }
         for (int i = 0; i < resultTable.length; ++i)
         {
-            int total = resultTable[i][resultTable.length] - resultTable[i][i];
-            System.out.println(competitor.get(i).Name() + " " + total);
+            System.out.println(competitor.get(i).Name() + " " + resultTable[i][resultTable.length]);
         }
     }
     public static Point fight(int numberOfRounds, Strategy a, Strategy b)
