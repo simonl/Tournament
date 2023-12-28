@@ -1,5 +1,6 @@
 package domain.logic;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -21,33 +22,37 @@ public class Tournament
         competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
         competitor.add(new CounterTitForTat());
-        int[][] resultTable = new int[competitor.size()][competitor.size() + 1];
-        for (int i = 0; i < resultTable.length; ++i)
+
+        // Initializing result map
+        Map<String, Integer> resultTable = new TreeMap();
+        for (Strategy strategy : competitor) {
+            resultTable.put(strategy.Name(), 0);
+        }
+
+        for (int i = 0; i < competitor.size(); ++i)
         {
             for (int j = 0; j <= i; ++j)
             {
-                Point result = fight(numberOfRounds, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
-                if (i != j)
-                {
-                    resultTable[i][j] = result.x;
-                    resultTable[j][i] = result.y;
-                    resultTable[i][resultTable.length] += result.x;
-                    resultTable[j][resultTable.length] += result.y;
-                }
-                else
-                {
-                    int average = (result.x + result.y)/2;
-                    resultTable[i][i] = average;
-                    resultTable[j][resultTable.length] += average;
-                }
+                Map<String, Integer> result = fight(numberOfRounds, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
+                String algo1Name = competitor.get(i).Name();
+                String algo2Name = competitor.get(j).Name();
+
+                int actualValue1 = resultTable.get(algo1Name);
+                int newValue1 = actualValue1 + result.get(algo1Name);
+                resultTable.put(algo1Name, newValue1);
+
+                int actualValue2 = resultTable.get(algo2Name);
+                int newValue2 = actualValue2 + result.get(algo2Name);
+                resultTable.put(algo2Name, newValue2);
                 
             }
         }
 
         // Sorting the results for display
         Map<Integer, String> result = new TreeMap();
-        for (int i = 0; i < resultTable.length; i++) {
-            result.put(resultTable[i][resultTable.length], competitor.get(i).Name() + ": " + resultTable[i][resultTable.length]);
+        for (int i = 0; i < competitor.size(); i++) {
+            int competitorPoint = resultTable.get(competitor.get(i).Name());
+            result.put(competitorPoint, competitor.get(i).Name() + ": " + competitorPoint);
         }
 
         List<String> orderedResult = new ArrayList<>(result.values());
@@ -64,9 +69,10 @@ public class Tournament
         }
     }
     
-    public static Point fight(int numberOfRounds, Strategy a, Strategy b)
+    public static Map<String, Integer> fight(int numberOfRounds, Strategy a, Strategy b)
     {
         a.Reset(); b.Reset();
+        Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
         byte previousActionA = 2; byte previousActionB = 2;
         byte actionA; byte actionB;
@@ -101,6 +107,8 @@ public class Tournament
             previousActionA = actionA;
             previousActionB = actionB;
         }
-        return new Point(totalA,totalB);
+        result.put(a.Name(), totalA);
+        result.put(b.Name(), totalB);
+        return result;
     }
 }
