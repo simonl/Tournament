@@ -1,6 +1,7 @@
 package domain.algorithms;
 
 import domain.logic.Strategy;
+
 public class TitForTat extends Strategy
 {
     byte nextAction = 0;
