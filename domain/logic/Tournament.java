@@ -22,8 +22,7 @@ public class Tournament
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
-        competitor.add(new CounterTitForTat());
-
+        
         // Initializing result map
         Map<String, Integer> resultTable = new HashMap<>();
         for (Strategy strategy : competitor) {
