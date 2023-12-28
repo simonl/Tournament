@@ -1,5 +1,6 @@
 package domain.logic;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -17,14 +18,14 @@ public class Tournament
     public static void main(String[] args)
     {
         Random rand = new Random();
-        int numberOfRounds = 195 + rand.nextInt(11);
+        int numberOfRounds = 1; //195 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
         competitor.add(new CounterTitForTat());
 
         // Initializing result map
-        Map<String, Integer> resultTable = new TreeMap();
+        Map<String, Integer> resultTable = new HashMap<>();
         for (Strategy strategy : competitor) {
             resultTable.put(strategy.Name(), 0);
         }
@@ -48,24 +49,36 @@ public class Tournament
             }
         }
 
-        // Sorting the results for display
-        Map<Integer, String> result = new TreeMap();
-        for (int i = 0; i < competitor.size(); i++) {
-            int competitorPoint = resultTable.get(competitor.get(i).Name());
-            result.put(competitorPoint, competitor.get(i).Name() + ": " + competitorPoint);
+        List<String> names = new ArrayList<>(resultTable.keySet());
+        List<Integer> points = new ArrayList<>(resultTable.values());
+
+        List<String> orderedNames = new ArrayList<>();
+        List<Integer> orderedPoints = new ArrayList<>();
+
+        while (!points.isEmpty()) {
+            int max = Collections.max(points);
+            int maxIndex = points.indexOf(max);
+            orderedNames.add(names.remove(maxIndex));
+            orderedPoints.add(points.remove(maxIndex));
         }
 
-        List<String> orderedResult = new ArrayList<>(result.values());
+        Map<Integer, String> positions = new HashMap<>();
+        positions.put(0, "1st");
+        positions.put(1, "2nd");
+        positions.put(2, "3rd");
+        positions.put(3, "4th");
+        positions.put(4, "5th");
 
-        for (int i = 0; i < orderedResult.size(); i++) {
-            if (i == 0) 
-                System.out.println("1st --> " + " " + orderedResult.get(orderedResult.size() - (i + 1)));
-            else if (i == 1)
-                System.out.println("2nd --> " + " " + orderedResult.get(orderedResult.size() - (i + 1)));
-            else if (i == 2)
-                System.out.println("3rd --> " + " " + orderedResult.get(orderedResult.size() - (i + 1)));
+        for (int i = 0; i < orderedNames.size(); i++) {
+            if (i == 0)
+                System.out.println("1st ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
+            else if (i > 0 && i < 5)
+                if (orderedPoints.get(i) == orderedPoints.get(i - 1))
+                    System.out.println(positions.get(i-1) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
+                else
+                    System.out.println(positions.get(i) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
             else
-                System.out.println(orderedResult.get(orderedResult.size() - (i + 1)));
+                System.out.println(orderedNames.get(i) + ": " + orderedPoints.get(i));
         }
     }
     
