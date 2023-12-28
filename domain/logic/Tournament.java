@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import domain.algorithms.Constant;
-import domain.algorithms.CounterTitForTat;
+import domain.algorithms.GenerousTFT;
 import domain.algorithms.RandomMove;
 import domain.algorithms.TitForTat;
 
@@ -22,6 +22,7 @@ public class Tournament
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
+        competitor.add(new GenerousTFT());
         
         // Initializing result map
         Map<String, Integer> resultTable = new HashMap<>();
