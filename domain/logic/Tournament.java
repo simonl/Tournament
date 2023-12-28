@@ -4,14 +4,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 
 import domain.algorithms.Constant;
 import domain.algorithms.CounterTitForTat;
 import domain.algorithms.RandomMove;
 import domain.algorithms.TitForTat;
 
-import java.awt.*;
 import java.util.List;
 public class Tournament
 {
@@ -41,11 +39,13 @@ public class Tournament
                 int actualValue1 = resultTable.get(algo1Name);
                 int newValue1 = actualValue1 + result.get(algo1Name);
                 resultTable.put(algo1Name, newValue1);
-
-                int actualValue2 = resultTable.get(algo2Name);
-                int newValue2 = actualValue2 + result.get(algo2Name);
-                resultTable.put(algo2Name, newValue2);
-                
+                // To prevent double count
+                if(algo1Name != algo2Name)
+                {
+                    int actualValue2 = resultTable.get(algo2Name);
+                    int newValue2 = actualValue2 + result.get(algo2Name);
+                    resultTable.put(algo2Name, newValue2);
+                }
             }
         }
 
