@@ -17,9 +17,9 @@ public final class Constant extends Strategy
     {
         return action;
     }
-    public void Reset()
+    public Strategy Duplicate()
     {
-
+        return new Constant(action, name);
     }
     public String Name()
     {

@@ -18,7 +18,7 @@ public class Tournament
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
-        competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove());
+        competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove(rand));
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
         competitor.add(new GenerousTFT());
         
@@ -84,15 +84,16 @@ public class Tournament
     
     public static Map<String, Integer> fight(int numberOfRounds, Strategy a, Strategy b)
     {
-        a.Reset(); b.Reset();
+        Strategy playerA = a.Duplicate();
+        Strategy playerB = b.Duplicate();
         Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
         byte previousActionA = 2; byte previousActionB = 2;
         byte actionA; byte actionB;
         for (int i = 0; i < numberOfRounds; ++i)
         {
-            actionA = a.Action(previousActionB);
-            actionB = b.Action(previousActionA);
+            actionA = playerA.Action(previousActionB);
+            actionB = playerB.Action(previousActionA);
             if(actionA == 0)
             {
                 if(actionB == 0)
@@ -120,8 +121,8 @@ public class Tournament
             previousActionA = actionA;
             previousActionB = actionB;
         }
-        result.put(a.Name(), totalA);
-        result.put(b.Name(), totalB);
+        result.put(playerA.Name(), totalA);
+        result.put(playerB.Name(), totalB);
         return result;
     }
 }

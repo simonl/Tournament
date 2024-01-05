@@ -26,8 +26,8 @@ public class GenerousTFT extends Strategy {
     }
 
     @Override
-    public void Reset() {
-
+    public Strategy Duplicate() {
+        return new GenerousTFT();
     }
 
     @Override
