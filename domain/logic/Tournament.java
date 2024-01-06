@@ -19,8 +19,8 @@ public class Tournament
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
-        competitor.add(new Constant((byte)0, "Coop"));
-        competitor.add(new Constant((byte)1, "Selfish"));
+        competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
+        competitor.add(new Constant(Strategy.DEFECT, "Selfish"));
         competitor.add(new RandomMove(rand));
         competitor.add(new TitForTat());
         competitor.add(new GenerousTFT());
@@ -44,7 +44,7 @@ public class Tournament
                 int newValue1 = actualValue1 + result.get(algo1Name);
                 resultTable.put(algo1Name, newValue1);
                 // To prevent double count
-                if(algo1Name != algo2Name)
+                if(!algo1Name.equals(algo2Name))
                 {
                     int actualValue2 = resultTable.get(algo2Name);
                     int newValue2 = actualValue2 + result.get(algo2Name);
@@ -77,7 +77,7 @@ public class Tournament
             if (i == 0)
                 System.out.println("1st ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
             else if (i > 0 && i < 5)
-                if (orderedPoints.get(i) == orderedPoints.get(i - 1))
+                if (orderedPoints.get(i).equals(orderedPoints.get(i - 1)))
                     System.out.println(positions.get(i-1) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
                 else
                     System.out.println(positions.get(i) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
@@ -96,8 +96,9 @@ public class Tournament
         byte actionA; byte actionB;
         for (int i = 0; i < numberOfRounds; ++i)
         {
-            actionA = playerA.Action(previousActionB);
-            actionB = playerB.Action(previousActionA);
+            actionA = previousActionA == 2 ? playerA.firstAction() : playerA.Action(previousActionA, previousActionB);
+            actionB = previousActionB == 2 ? playerB.firstAction() : playerB.Action(previousActionB, previousActionA);
+
             if(actionA == 0)
             {
                 if(actionB == 0)

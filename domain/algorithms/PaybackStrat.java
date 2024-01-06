@@ -3,28 +3,23 @@ package domain.algorithms;
 import domain.logic.Strategy;
 
 public class PaybackStrat extends Strategy {
-    private static final int COOPERATE = 0;
-    private static final int DEFECT = 1;
-    private static final int INIT = 2;
-
     int score = 0;
-    byte pastAction = COOPERATE;
 
     @Override
-    public byte Action(byte previousMove) {
-        if (previousMove != pastAction) {
-            switch (previousMove) {
-                case INIT -> score = 0;
+    public byte firstAction() {
+        return COOPERATE;
+    }
+
+    @Override
+    public byte Action(byte pastAction, byte pastSensor) {
+        if (pastSensor != pastAction) {
+            switch (pastSensor) {
                 case COOPERATE -> score++;
                 case DEFECT -> score--;
             }
         }
 
-        if (score < 0) {
-            return (pastAction = DEFECT);
-        }
-
-        return (pastAction = COOPERATE);
+        return score < 0 ? DEFECT : COOPERATE;
     }
 
     @Override

@@ -5,18 +5,17 @@ import domain.logic.Strategy;
 public class TitForTat extends Strategy
 {
     byte nextAction = 0;
-    public TitForTat()
-    {
-        
+
+    @Override
+    public byte firstAction() {
+        return COOPERATE;
     }
-    public byte Action(byte previousMove)
+
+    public byte Action(byte pastAction, byte pastSensor)
     {
-        if(previousMove != 2)
-        {
-            nextAction = previousMove;
-        }
-        return nextAction;
+        return pastSensor;
     }
+
     public Strategy Duplicate()
     {
         return new TitForTat();
