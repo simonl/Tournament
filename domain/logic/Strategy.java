@@ -9,10 +9,9 @@ public abstract class Strategy
     public abstract byte Action(byte previousMove);
     // The fonction must return 0 if it wants to cooperate and 1 if it wants to deflect.
     
-    //This fonction reset an strategy has if a new one was initiated.
-    //For example, if your strategy create a list of all of the previous move, 
-    //the list must be reset when this fonction is call.
-    public abstract void Reset();
+    //This fonction return a newly instantiate strategy
+    //This reset the strategy before each battle
+    public abstract Strategy Duplicate();
 
     //This fonction return the name of the strategy
     public abstract String Name();

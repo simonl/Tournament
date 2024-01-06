@@ -17,9 +17,9 @@ public class TitForTat extends Strategy
         }
         return nextAction;
     }
-    public void Reset()
+    public Strategy Duplicate()
     {
-        nextAction = 0;
+        return new TitForTat();
     }
     public String Name()
     {

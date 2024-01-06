@@ -4,14 +4,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 
 import domain.algorithms.Constant;
+import domain.algorithms.GenerousTFT;
 import domain.algorithms.PaybackStrat;
 import domain.algorithms.RandomMove;
 import domain.algorithms.TitForTat;
 
-import java.awt.*;
 import java.util.List;
 public class Tournament
 {
@@ -22,8 +21,9 @@ public class Tournament
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant((byte)0, "Coop"));
         competitor.add(new Constant((byte)1, "Selfish"));
-        competitor.add(new RandomMove());
+        competitor.add(new RandomMove(rand));
         competitor.add(new TitForTat());
+        competitor.add(new GenerousTFT());
         competitor.add(new PaybackStrat());
         
         // Initializing result map
@@ -43,11 +43,13 @@ public class Tournament
                 int actualValue1 = resultTable.get(algo1Name);
                 int newValue1 = actualValue1 + result.get(algo1Name);
                 resultTable.put(algo1Name, newValue1);
-
-                int actualValue2 = resultTable.get(algo2Name);
-                int newValue2 = actualValue2 + result.get(algo2Name);
-                resultTable.put(algo2Name, newValue2);
-                
+                // To prevent double count
+                if(algo1Name != algo2Name)
+                {
+                    int actualValue2 = resultTable.get(algo2Name);
+                    int newValue2 = actualValue2 + result.get(algo2Name);
+                    resultTable.put(algo2Name, newValue2);
+                }
             }
         }
 
@@ -86,15 +88,16 @@ public class Tournament
     
     public static Map<String, Integer> fight(int numberOfRounds, Strategy a, Strategy b)
     {
-        a.Reset(); b.Reset();
+        Strategy playerA = a.Duplicate();
+        Strategy playerB = b.Duplicate();
         Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
         byte previousActionA = 2; byte previousActionB = 2;
         byte actionA; byte actionB;
         for (int i = 0; i < numberOfRounds; ++i)
         {
-            actionA = a.Action(previousActionB);
-            actionB = b.Action(previousActionA);
+            actionA = playerA.Action(previousActionB);
+            actionB = playerB.Action(previousActionA);
             if(actionA == 0)
             {
                 if(actionB == 0)
@@ -122,8 +125,8 @@ public class Tournament
             previousActionA = actionA;
             previousActionB = actionB;
         }
-        result.put(a.Name(), totalA);
-        result.put(b.Name(), totalB);
+        result.put(playerA.Name(), totalA);
+        result.put(playerB.Name(), totalB);
         return result;
     }
 }

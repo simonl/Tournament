@@ -28,9 +28,8 @@ public class PaybackStrat extends Strategy {
     }
 
     @Override
-    public void Reset() {
-        this.score = 0;
-        this.pastAction = COOPERATE;
+    public Strategy Duplicate() {
+        return new PaybackStrat();
     }
 
     @Override

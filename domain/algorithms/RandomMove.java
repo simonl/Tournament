@@ -5,17 +5,17 @@ import domain.logic.Strategy;
 public final class RandomMove extends Strategy
 {
     Random rand;
-    public RandomMove()
+    public RandomMove(Random Rand)
     {
-        rand = new Random();
+        rand = Rand;
     }
     public byte Action(byte previousMove)
     {
         return (byte)rand.nextInt(2);
     }
-    public void Reset()
+    public Strategy Duplicate()
     {
-
+        return new RandomMove(rand);
     }
     public String Name()
     {
