@@ -18,6 +18,8 @@ public class Tournament
     {
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
+        double mistakeProbability = 0.05;
+
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
         competitor.add(new Constant(Strategy.DEFECT, "Selfish"));
@@ -32,11 +34,12 @@ public class Tournament
             resultTable.put(strategy.Name(), 0);
         }
 
+        for (int n = 0; n < 100; ++n)
         for (int i = 0; i < competitor.size(); ++i)
         {
             for (int j = 0; j <= i; ++j)
             {
-                Map<String, Integer> result = fight(numberOfRounds, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
+                Map<String, Integer> result = fight(rand, numberOfRounds, mistakeProbability, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
                 String algo1Name = competitor.get(i).Name();
                 String algo2Name = competitor.get(j).Name();
 
@@ -86,7 +89,7 @@ public class Tournament
         }
     }
     
-    public static Map<String, Integer> fight(int numberOfRounds, Strategy a, Strategy b)
+    public static Map<String, Integer> fight(Random rand, int numberOfRounds, double mistakeProbability, Strategy a, Strategy b)
     {
         Strategy playerA = a.Duplicate();
         Strategy playerB = b.Duplicate();
@@ -98,6 +101,14 @@ public class Tournament
         {
             actionA = previousActionA == 2 ? playerA.firstAction() : playerA.Action(previousActionA, previousActionB);
             actionB = previousActionB == 2 ? playerB.firstAction() : playerB.Action(previousActionB, previousActionA);
+
+            if (rand.nextFloat() < mistakeProbability) {
+                actionA = (actionA == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);
+            }
+
+            if (rand.nextFloat() < mistakeProbability) {
+                actionB = (actionB == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);
+            }
 
             if(actionA == 0)
             {
