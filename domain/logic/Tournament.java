@@ -95,12 +95,12 @@ public class Tournament
         Strategy playerB = b.Duplicate();
         Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
-        byte previousActionA = 2; byte previousActionB = 2;
+        byte previousActionA = Strategy.INIT; byte previousActionB = Strategy.INIT;
         byte actionA; byte actionB;
         for (int i = 0; i < numberOfRounds; ++i)
         {
-            actionA = previousActionA == 2 ? playerA.firstAction() : playerA.Action(previousActionA, previousActionB);
-            actionB = previousActionB == 2 ? playerB.firstAction() : playerB.Action(previousActionB, previousActionA);
+            actionA = playerA.Action(previousActionA, previousActionB);
+            actionB = playerB.Action(previousActionB, previousActionA);
 
             if (rand.nextFloat() < mistakeProbability) {
                 actionA = (actionA == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);

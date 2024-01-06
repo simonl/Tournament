@@ -14,9 +14,6 @@ public final class Constant extends Strategy
         name = Name;
     }
 
-    public byte firstAction() {
-        return action;
-    }
     public byte Action(byte pastAction, byte pastSensor)
     {
         return action;

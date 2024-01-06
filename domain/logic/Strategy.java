@@ -4,8 +4,7 @@ public abstract class Strategy
 {
     public static final byte COOPERATE = 0;
     public static final byte DEFECT = 1;
-
-    public abstract byte firstAction();
+    public static final byte INIT = 2;
 
     // Previous move can receive 3 different imput
     // 0 the opponent cooperated on the previous move

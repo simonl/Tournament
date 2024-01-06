@@ -4,15 +4,11 @@ import domain.logic.Strategy;
 
 public class TitForTat extends Strategy
 {
-    byte nextAction = 0;
-
-    @Override
-    public byte firstAction() {
-        return COOPERATE;
-    }
-
     public byte Action(byte pastAction, byte pastSensor)
     {
+        if (pastSensor == INIT) {
+            return COOPERATE;
+        }
         return pastSensor;
     }
 

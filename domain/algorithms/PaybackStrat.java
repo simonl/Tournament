@@ -6,11 +6,6 @@ public class PaybackStrat extends Strategy {
     int score = 0;
 
     @Override
-    public byte firstAction() {
-        return COOPERATE;
-    }
-
-    @Override
     public byte Action(byte pastAction, byte pastSensor) {
         if (pastSensor != pastAction) {
             switch (pastSensor) {
