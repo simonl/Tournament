@@ -9,8 +9,8 @@ public final class RandomMove extends Strategy
     {
         rand = Rand;
     }
-    public byte Action(byte previousMove)
-    {
+
+    public byte Action(byte pastAction, byte pastSensor) {
         return (byte)rand.nextInt(2);
     }
     public Strategy Duplicate()

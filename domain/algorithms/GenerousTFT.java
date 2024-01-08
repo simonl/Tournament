@@ -7,21 +7,19 @@ public class GenerousTFT extends Strategy {
     private final double FORGIVENESS_PROBABILITY = 0.1; // 10% because it was the number said in the video
 
     @Override
-    public byte Action(byte previousMove) {
-
-        switch (previousMove) {
-            case 2:
-                return 0;
-
-            case 1:
+    public byte Action(byte pastAction, byte pastSensor) {
+        switch (pastSensor) {
+            case INIT:
+                return COOPERATE;
+            case DEFECT:
                 //Check if we should forgive after the algo defect
                 if (Math.random() < FORGIVENESS_PROBABILITY)
-                    return 0;
+                    return COOPERATE;
                 else
-                    return previousMove;
-        
+                    return pastSensor;
+            case COOPERATE:
             default:
-                return previousMove;
+                return pastSensor;
         }
     }
 

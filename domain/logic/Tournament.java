@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Random;
 
 import domain.algorithms.*;
+import domain.algorithms.PaybackStrat;
 
 import java.util.List;
 public class Tournament
@@ -14,12 +15,17 @@ public class Tournament
     {
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
+        double mistakeProbability = 0.05;
+
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
-        competitor.add(new Constant((byte)0, "Coop")); //competitor.add(new RandomMove(rand));
-        competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
+        competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
+        competitor.add(new Constant(Strategy.DEFECT, "Selfish"));
+        competitor.add(new RandomMove(rand));
+        competitor.add(new TitForTat());
         //competitor.add(new GenerousTFT());
         //competitor.add(new And());
         //competitor.add(new exp_algo());
+        competitor.add(new PaybackStrat());
         //competitor.add(new gauss_algo());
         competitor.add(new GoodToBad());
         //competitor.add(new ImpLR());
@@ -37,11 +43,12 @@ public class Tournament
             resultTable.put(strategy.Name(), 0);
         }
 
+        for (int n = 0; n < 100; ++n)
         for (int i = 0; i < competitor.size(); ++i)
         {
             for (int j = 0; j <= i; ++j)
             {
-                Map<String, Integer> result = fight(numberOfRounds, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
+                Map<String, Integer> result = fight(rand, numberOfRounds, mistakeProbability, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
                 String algo1Name = competitor.get(i).Name();
                 String algo2Name = competitor.get(j).Name();
 
@@ -49,7 +56,7 @@ public class Tournament
                 int newValue1 = actualValue1 + result.get(algo1Name);
                 resultTable.put(algo1Name, newValue1);
                 // To prevent double count
-                if(algo1Name != algo2Name)
+                if(!algo1Name.equals(algo2Name))
                 {
                     int actualValue2 = resultTable.get(algo2Name);
                     int newValue2 = actualValue2 + result.get(algo2Name);
@@ -82,7 +89,7 @@ public class Tournament
             if (i == 0)
                 System.out.println("1st ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
             else if (i > 0 && i < 5)
-                if (orderedPoints.get(i) == orderedPoints.get(i - 1))
+                if (orderedPoints.get(i).equals(orderedPoints.get(i - 1)))
                     System.out.println(positions.get(i-1) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
                 else
                     System.out.println(positions.get(i) + " ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
@@ -91,18 +98,27 @@ public class Tournament
         }
     }
     
-    public static Map<String, Integer> fight(int numberOfRounds, Strategy a, Strategy b)
+    public static Map<String, Integer> fight(Random rand, int numberOfRounds, double mistakeProbability, Strategy a, Strategy b)
     {
         Strategy playerA = a.Duplicate();
         Strategy playerB = b.Duplicate();
         Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
-        byte previousActionA = 2; byte previousActionB = 2;
+        byte previousActionA = Strategy.INIT; byte previousActionB = Strategy.INIT;
         byte actionA; byte actionB;
         for (int i = 0; i < numberOfRounds; ++i)
         {
-            actionA = playerA.Action(previousActionB);
-            actionB = playerB.Action(previousActionA);
+            actionA = playerA.Action(previousActionA, previousActionB);
+            actionB = playerB.Action(previousActionB, previousActionA);
+
+            if (rand.nextFloat() < mistakeProbability) {
+                actionA = (actionA == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);
+            }
+
+            if (rand.nextFloat() < mistakeProbability) {
+                actionB = (actionB == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);
+            }
+
             if(actionA == 0)
             {
                 if(actionB == 0)
