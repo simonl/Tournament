@@ -5,10 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import domain.algorithms.Constant;
-import domain.algorithms.GenerousTFT;
-import domain.algorithms.RandomMove;
-import domain.algorithms.TitForTat;
+import domain.algorithms.*;
 
 import java.util.List;
 public class Tournament
@@ -18,9 +15,21 @@ public class Tournament
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
-        competitor.add(new Constant((byte)0, "Coop")); competitor.add(new RandomMove(rand));
+        competitor.add(new Constant((byte)0, "Coop")); //competitor.add(new RandomMove(rand));
         competitor.add(new Constant((byte)1, "Selfish")); competitor.add(new TitForTat());
-        competitor.add(new GenerousTFT());
+        //competitor.add(new GenerousTFT());
+        //competitor.add(new And());
+        //competitor.add(new exp_algo());
+        //competitor.add(new gauss_algo());
+        competitor.add(new GoodToBad());
+        //competitor.add(new ImpLR());
+        //competitor.add(new Jerk());
+        //competitor.add(new NastyThreeMove());
+        //competitor.add(new NiceThreeMove());
+        //competitor.add(new Or());
+        competitor.add(new SmarterThreeMove());
+        //competitor.add(new sSi());
+        //competitor.add(new XOR());
         
         // Initializing result map
         Map<String, Integer> resultTable = new HashMap<>();
