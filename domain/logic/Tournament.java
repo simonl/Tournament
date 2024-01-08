@@ -1,14 +1,9 @@
 package domain.logic;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import domain.algorithms.*;
 import domain.algorithms.PaybackStrat;
 
-import java.util.List;
 public class Tournament
 {
     public static void main(String[] args)
@@ -16,13 +11,14 @@ public class Tournament
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
         double mistakeProbability = 0.05;
+        int maxPad = 11;
 
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
         competitor.add(new Constant(Strategy.DEFECT, "Selfish"));
         competitor.add(new RandomMove(rand));
         competitor.add(new TitForTat());
-        //competitor.add(new GenerousTFT());
+        competitor.add(new GenerousTFT());
         //competitor.add(new And());
         //competitor.add(new exp_algo());
         competitor.add(new PaybackStrat());
@@ -38,10 +34,7 @@ public class Tournament
         //competitor.add(new XOR());
         
         // Initializing result map
-        Map<String, Integer> resultTable = new HashMap<>();
-        for (Strategy strategy : competitor) {
-            resultTable.put(strategy.Name(), 0);
-        }
+        int[][] resultTable = new int[competitor.size()][competitor.size()];
 
         for (int n = 0; n < 100; ++n)
         for (int i = 0; i < competitor.size(); ++i)
@@ -52,21 +45,37 @@ public class Tournament
                 String algo1Name = competitor.get(i).Name();
                 String algo2Name = competitor.get(j).Name();
 
-                int actualValue1 = resultTable.get(algo1Name);
-                int newValue1 = actualValue1 + result.get(algo1Name);
-                resultTable.put(algo1Name, newValue1);
-                // To prevent double count
-                if(!algo1Name.equals(algo2Name))
-                {
-                    int actualValue2 = resultTable.get(algo2Name);
-                    int newValue2 = actualValue2 + result.get(algo2Name);
-                    resultTable.put(algo2Name, newValue2);
-                }
+                resultTable[i][j] += result.get(algo1Name);
+                resultTable[j][i] += result.get(algo2Name);
             }
         }
 
-        List<String> names = new ArrayList<>(resultTable.keySet());
-        List<Integer> points = new ArrayList<>(resultTable.values());
+        for (int i = 0; i < competitor.size(); i++) {
+            resultTable[i][i] /= 2;
+        }
+
+        System.out.print(" ".repeat(maxPad + 2));
+        for (int i = 0; i < competitor.size(); ++i) {
+            String name = competitor.get(i).Name();
+            System.out.print(" ".repeat(maxPad - name.length()) + name + " |");
+        }
+        System.out.println();
+
+        for (int i = 0; i < competitor.size(); ++i) {
+            String name = competitor.get(i).Name();
+            System.out.print(name + " ".repeat(maxPad - name.length()) + ": ");
+
+            for (int j = 0; j < competitor.size(); ++j) {
+                String diff = ((Integer)(resultTable[i][j] - resultTable[j][i])).toString();
+
+                System.out.print(" ".repeat(maxPad - diff.length()) + diff + " |");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        List<String> names = new ArrayList<>(competitor.stream().map(c -> c.Name()).toList());
+        List<Integer> points = new ArrayList<>(Arrays.stream(resultTable).map(xs -> Arrays.stream(xs).sum()).toList());
 
         List<String> orderedNames = new ArrayList<>();
         List<Integer> orderedPoints = new ArrayList<>();

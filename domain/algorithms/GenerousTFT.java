@@ -30,7 +30,7 @@ public class GenerousTFT extends Strategy {
 
     @Override
     public String Name() {
-        return "GenerousTFT";
+        return "Generous";
     }
     
 }

@@ -24,6 +24,6 @@ public class PaybackStrat extends Strategy {
 
     @Override
     public String Name() {
-        return "Simon-Payback";
+        return "Payback";
     }
 }
