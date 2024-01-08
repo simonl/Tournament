@@ -11,7 +11,7 @@ public class GoodToBad extends Strategy {
     int actualRound = 0;
     boolean setDeflect = false;
 
-    public byte Action(byte previousMove)
+    public byte Action(byte pastAction, byte previousMove)
     {
         if(previousMove != 2)
         {

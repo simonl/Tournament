@@ -25,7 +25,7 @@ public class gauss_algo extends Strategy {
     }*/
 
     @Override
-    public byte Action(byte previousMove) {
+    public byte Action(byte pastAction, byte previousMove) {
         double mean = 0.9;
         double stdv = 0.05;
 

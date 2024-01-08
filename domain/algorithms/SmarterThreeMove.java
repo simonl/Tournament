@@ -16,7 +16,7 @@ public class SmarterThreeMove extends Strategy
         last3Move = new LinkedList<Byte>();
         phase = 0;
     }
-    public byte Action(byte previousMove)
+    public byte Action(byte pastAction, byte previousMove)
     {
         switch (phase) {
             case 0: 

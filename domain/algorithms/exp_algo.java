@@ -14,7 +14,7 @@ public class exp_algo extends Strategy {
     }
 
     @Override
-    public byte Action(byte previousMove) {
+    public byte Action(byte pastAction, byte previousMove) {
         double rate = 1.5;
         return (byte) expo(rate);
     }
