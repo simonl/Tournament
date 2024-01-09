@@ -21,7 +21,8 @@ public class Tournament
         competitor.add(new GenerousTFT());
         //competitor.add(new And());
         //competitor.add(new exp_algo());
-        competitor.add(new PaybackStrat());
+        competitor.add(new PaybackStrat(false));
+        competitor.add(new PaybackStrat(true));
         //competitor.add(new gauss_algo());
         competitor.add(new GoodToBad());
         //competitor.add(new ImpLR());

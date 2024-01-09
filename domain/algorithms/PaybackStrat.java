@@ -3,7 +3,12 @@ package domain.algorithms;
 import domain.logic.Strategy;
 
 public class PaybackStrat extends Strategy {
-    int score = 0;
+    private int score = 0;
+    private final boolean sneaky;
+
+    public PaybackStrat(boolean sneaky) {
+        this.sneaky = sneaky;
+    }
 
     @Override
     public byte Action(byte pastAction, byte pastSensor) {
@@ -14,16 +19,26 @@ public class PaybackStrat extends Strategy {
             }
         }
 
-        return score < 0 ? DEFECT : COOPERATE;
+        if (score < 0) {
+            return DEFECT;
+        }
+
+        if (sneaky) {
+            if (Math.random() > Math.pow(2, -score)) {
+                return DEFECT;
+            }
+        }
+
+        return COOPERATE;
     }
 
     @Override
     public Strategy Duplicate() {
-        return new PaybackStrat();
+        return new PaybackStrat(this.sneaky);
     }
 
     @Override
     public String Name() {
-        return "Payback";
+        return this.sneaky ? "Sneaky" : "Payback";
     }
 }
