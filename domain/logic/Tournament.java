@@ -6,12 +6,18 @@ import domain.algorithms.PaybackStrat;
 
 public class Tournament
 {
+    private static final int[][] SCORES = new int[][] {
+            { 1, -1 },
+            { 2,  0 }
+    };
+
     public static void main(String[] args)
     {
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
         double mistakeProbability = 0.05;
         int maxPad = 11;
+        int samples = 100;
 
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
@@ -33,56 +39,58 @@ public class Tournament
         competitor.add(new SmarterThreeMove());
         //competitor.add(new sSi());
         //competitor.add(new XOR());
-        
-        // Initializing result map
-        int[][] resultTable = new int[competitor.size()][competitor.size()];
 
-        for (int n = 0; n < 100; ++n)
+        // Initializing result map
+        double[][] resultTable = new double[competitor.size()][competitor.size()];
+        double[][] varianceTable = new double[competitor.size()][competitor.size()];
+
         for (int i = 0; i < competitor.size(); ++i)
         {
-            for (int j = 0; j <= i; ++j)
+            for (int j = i; j < competitor.size(); ++j)
             {
-                Map<String, Integer> result = fight(rand, numberOfRounds, mistakeProbability, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
-                String algo1Name = competitor.get(i).Name();
-                String algo2Name = competitor.get(j).Name();
+                for (int n = 0; n < samples; ++n)
+                {
+                    Map<String, Double> result = fight(rand, numberOfRounds, mistakeProbability, (Strategy)competitor.get(i), (Strategy)competitor.get(j));
+                    String algo1Name = competitor.get(i).Name();
+                    String algo2Name = competitor.get(j).Name();
 
-                resultTable[i][j] += result.get(algo1Name);
-                resultTable[j][i] += result.get(algo2Name);
+                    resultTable[i][j] += result.get(algo1Name);
+                    resultTable[j][i] += result.get(algo2Name);
+
+                    varianceTable[i][j] += Math.pow(result.get(algo1Name), 2);
+                    varianceTable[j][i] += Math.pow(result.get(algo2Name), 2);
+                }
+
+                if (i == j) {
+                    resultTable[i][j] /= 2.0 * samples;
+                    varianceTable[i][j] /= 2.0 * samples;
+                    varianceTable[i][j] -= Math.pow(resultTable[i][j], 2);
+                    varianceTable[i][j] = Math.sqrt(varianceTable[i][j]);
+                } else {
+                    resultTable[i][j] /= samples;
+                    varianceTable[i][j] /= samples;
+                    varianceTable[i][j] -= Math.pow(resultTable[i][j], 2);
+                    varianceTable[i][j] = Math.sqrt(varianceTable[i][j]);
+
+                    resultTable[j][i] /= samples;
+                    varianceTable[j][i] /= samples;
+                    varianceTable[j][i] -= Math.pow(resultTable[j][i], 2);
+                    varianceTable[j][i] = Math.sqrt(varianceTable[j][i]);
+                }
             }
         }
 
-        for (int i = 0; i < competitor.size(); i++) {
-            resultTable[i][i] /= 2;
-        }
-
-        System.out.print(" ".repeat(maxPad + 2));
-        for (int i = 0; i < competitor.size(); ++i) {
-            String name = competitor.get(i).Name();
-            System.out.print(" ".repeat(maxPad - name.length()) + name + " |");
-        }
-        System.out.println();
-
-        for (int i = 0; i < competitor.size(); ++i) {
-            String name = competitor.get(i).Name();
-            System.out.print(name + " ".repeat(maxPad - name.length()) + ": ");
-
-            for (int j = 0; j < competitor.size(); ++j) {
-                String diff = ((Integer)(resultTable[i][j] - resultTable[j][i])).toString();
-
-                System.out.print(" ".repeat(maxPad - diff.length()) + diff + " |");
-            }
-            System.out.println();
-        }
-        System.out.println();
+        PrintTable(maxPad, competitor, resultTable);
+        PrintTable(maxPad, competitor, varianceTable);
 
         List<String> names = new ArrayList<>(competitor.stream().map(c -> c.Name()).toList());
-        List<Integer> points = new ArrayList<>(Arrays.stream(resultTable).map(xs -> Arrays.stream(xs).sum()).toList());
+        List<Double> points = new ArrayList<>(Arrays.stream(resultTable).map(xs -> Arrays.stream(xs).sum()).toList());
 
         List<String> orderedNames = new ArrayList<>();
-        List<Integer> orderedPoints = new ArrayList<>();
+        List<Double> orderedPoints = new ArrayList<>();
 
         while (!points.isEmpty()) {
-            int max = Collections.max(points);
+            double max = Collections.max(points);
             int maxIndex = points.indexOf(max);
             orderedNames.add(names.remove(maxIndex));
             orderedPoints.add(points.remove(maxIndex));
@@ -107,12 +115,34 @@ public class Tournament
                 System.out.println(orderedNames.get(i) + ": " + orderedPoints.get(i));
         }
     }
-    
-    public static Map<String, Integer> fight(Random rand, int numberOfRounds, double mistakeProbability, Strategy a, Strategy b)
+
+    private static void PrintTable(int maxPad, ArrayList<Strategy> competitor, double[][] resultTable) {
+        System.out.print(" ".repeat(maxPad + 2));
+        for (int i = 0; i < competitor.size(); ++i) {
+            String name = competitor.get(i).Name();
+            System.out.print(Padding(maxPad, name) + " |");
+        }
+        System.out.println();
+
+        for (int i = 0; i < competitor.size(); ++i) {
+            String name = competitor.get(i).Name();
+            System.out.print(Padding(maxPad, name) + ": ");
+
+            for (int j = 0; j < competitor.size(); ++j) {
+                double percent = (int)(1000* resultTable[i][j])/10.0;
+                String result = ((Double) percent).toString();
+
+                System.out.print(Padding(maxPad-1, result) + "% |");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static Map<String, Double> fight(Random rand, int numberOfRounds, double mistakeProbability, Strategy a, Strategy b)
     {
         Strategy playerA = a.Duplicate();
         Strategy playerB = b.Duplicate();
-        Map<String, Integer> result = new HashMap<>();
         int totalA = 0; int totalB = 0;
         byte previousActionA = Strategy.INIT; byte previousActionB = Strategy.INIT;
         byte actionA; byte actionB;
@@ -129,35 +159,24 @@ public class Tournament
                 actionB = (actionB == Strategy.COOPERATE ? Strategy.DEFECT : Strategy.COOPERATE);
             }
 
-            if(actionA == 0)
-            {
-                if(actionB == 0)
-                {
-                    totalA += 3;
-                    totalB += 3;
-                }
-                else
-                {
-                    totalB += 5;
-                }
-            }
-            else
-            {
-                if (actionB == 0)
-                {
-                    totalA += 5;
-                }
-                else
-                {
-                    totalA += 1;
-                    totalB += 1;
-                }
-            }
+            totalA += SCORES[actionA][actionB];
+            totalB += SCORES[actionB][actionA];
+
             previousActionA = actionA;
             previousActionB = actionB;
         }
-        result.put(playerA.Name(), totalA);
-        result.put(playerB.Name(), totalB);
+
+        Map<String, Double> result = new HashMap<>();
+        result.put(playerA.Name(), (double)totalA / numberOfRounds);
+        result.put(playerB.Name(), (double)totalB / numberOfRounds);
         return result;
+    }
+
+    private static String Padding(int length, String name) {
+        if (length < name.length()) {
+            return name.substring(0, length);
+        }
+
+        return " ".repeat(length - name.length()) + name;
     }
 }
