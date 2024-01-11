@@ -1,5 +1,7 @@
 package domain.logic;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import domain.algorithms.*;
 import domain.algorithms.PaybackStrat;
@@ -15,10 +17,11 @@ public class Tournament
     {
         Random rand = new Random();
         int numberOfRounds = 195 + rand.nextInt(11);
-        double mistakeProbability = 0.05;
+        double mistakeProbability = 0.10;
         int maxPad = 11;
-        int samples = 100;
-        int generations = 100;
+        int samples = 1000;
+        int generations = 100000000;
+        double dt = 1.0/samples;
 
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
@@ -81,30 +84,21 @@ public class Tournament
             }
         }
 
-        PrintTable(maxPad, competitor, resultTable);
-        PrintTable(maxPad, competitor, varianceTable);
-
         double[] population = new double[competitor.size()];
         for (int i = 0; i < competitor.size(); i++) {
             population[i] = (1.0/competitor.size());
         }
 
-        for (int g = 0; g < generations; g++) {
-            double[] newPopulation = new double[competitor.size()];
-
-            for (int i = 0; i < competitor.size(); i++) {
-                newPopulation[i] = 1.0;
-                for (int j = 0; j < competitor.size(); j++) {
-                    newPopulation[i] += population[j] * resultTable[i][j];
+        try (Scanner scanner = new Scanner(System.in)) {
+            for (int g = 0; g < generations+1; g++) {
+                if (g % generations == 0) {
+                    PrintTable(maxPad, competitor, population, resultTable);
+                    PrintTable(maxPad, competitor, population, varianceTable);
+                    //System.out.print(">>> Generation " + g + "...");
+                    //scanner.nextLine();
                 }
-                newPopulation[i] *= population[i];
-            }
 
-            population = newPopulation;
-
-            double total = Arrays.stream(population).sum();
-            for (int i = 0; i < competitor.size(); i++) {
-                population[i] /= total;
+                population = Evolve(competitor, resultTable, population, dt);
             }
         }
 
@@ -132,6 +126,7 @@ public class Tournament
         positions.put(3, "4th");
         positions.put(4, "5th");
 
+        System.out.println("Population: " + Arrays.stream(population).sum());
         for (int i = 0; i < orderedNames.size(); i++) {
             if (i == 0)
                 System.out.println("1st ---> " + orderedNames.get(i) + ": " + orderedPoints.get(i));
@@ -145,8 +140,42 @@ public class Tournament
         }
     }
 
-    private static void PrintTable(int maxPad, ArrayList<Strategy> competitor, double[][] resultTable) {
-        System.out.print(" ".repeat(maxPad + 2));
+    private static double[] Evolve(ArrayList<Strategy> competitor, double[][] resultTable, double[] population, double dt) {
+        double total = GrowthRate(population, resultTable);
+        return Map(population, (i, pop) -> {
+            double growth = Expected(population, j -> resultTable[i][j]) - total;
+            return population[i] * (1.0 + growth * dt);
+        });
+    }
+
+    private static double GrowthRate(double[] population, double[][] vs) {
+        return Expected(population, x -> Expected(population, y -> vs[x][y]));
+    }
+
+    private static double GrowthChange(double[] population, double[][] vs) {
+        return Expected(population, x ->
+                Expected(population, y ->
+                 Expected(population, z -> vs[x][z] + vs[y][z]) * vs[x][y]));
+    }
+
+    private static double Expected(double[] population, Function<Integer, Double> value) {
+        double average = 0.0;
+        for (int i = 0; i < population.length; i++) {
+            average += population[i] * value.apply(i);
+        }
+        return average;
+    }
+
+    private static double[] Map(double[] input, BiFunction<Integer, Double, Double> value) {
+        double[] output = new double[input.length];
+        for (int i = 0; i < input.length; i++) {
+            output[i] = value.apply(i, input[i]);
+        }
+        return output;
+    }
+
+    private static void PrintTable(int maxPad, ArrayList<Strategy> competitor, double[] population, double[][] resultTable) {
+        System.out.print(Padding(maxPad + 2, ""));
         for (int i = 0; i < competitor.size(); ++i) {
             String name = competitor.get(i).Name();
             System.out.print(Padding(maxPad, name) + " |");
@@ -158,13 +187,36 @@ public class Tournament
             System.out.print(Padding(maxPad, name) + ": ");
 
             for (int j = 0; j < competitor.size(); ++j) {
-                double percent = (int)(1000* resultTable[i][j])/10.0;
-                String result = ((Double) percent).toString();
-
-                System.out.print(Padding(maxPad-1, result) + "% |");
+                double value = resultTable[i][j];
+                double diff = (1 + resultTable[i][j]) - (1 + resultTable[j][i]);
+                double ratio = (1 + resultTable[i][j]) / (1 + resultTable[j][i]);
+                String result = format(value);
+                System.out.print(Padding(maxPad, result) + " |");
             }
-            System.out.println();
+
+            {
+                final int fi = i;
+                double value = Expected(population, j -> resultTable[fi][j]);
+                String result = "<" + format(value) + ">";
+                System.out.println(" " + Padding(maxPad, result));
+            }
         }
+
+            System.out.print(Padding(maxPad + 2, ""));
+
+            for (int j = 0; j < competitor.size(); ++j) {
+                final int fj = j;
+                double value = Expected(population, i -> resultTable[i][fj]);
+                String result = "<" + format(value) + ">";
+                System.out.print(Padding(maxPad, result) + " |");
+            }
+
+            {
+                double value = Expected(population, i -> Expected(population, j -> resultTable[i][j]));
+                String result = "<" + format(value) + ">";
+                System.out.println(" " + Padding(maxPad, result));
+            }
+
         System.out.println();
     }
 
@@ -199,6 +251,11 @@ public class Tournament
         result.put(playerA.Name(), (double)totalA / numberOfRounds);
         result.put(playerB.Name(), (double)totalB / numberOfRounds);
         return result;
+    }
+
+    private static String format(double value) {
+        double percent = Math.round(1000* value)/10.0;
+        return percent + "%";
     }
 
     private static String Padding(int length, String name) {
