@@ -18,6 +18,7 @@ public class Tournament
         double mistakeProbability = 0.05;
         int maxPad = 11;
         int samples = 100;
+        int generations = 100;
 
         ArrayList<Strategy> competitor = new ArrayList<Strategy>();
         competitor.add(new Constant(Strategy.COOPERATE, "Coop"));
@@ -83,8 +84,36 @@ public class Tournament
         PrintTable(maxPad, competitor, resultTable);
         PrintTable(maxPad, competitor, varianceTable);
 
+        double[] population = new double[competitor.size()];
+        for (int i = 0; i < competitor.size(); i++) {
+            population[i] = (1.0/competitor.size());
+        }
+
+        for (int g = 0; g < generations; g++) {
+            double[] newPopulation = new double[competitor.size()];
+
+            for (int i = 0; i < competitor.size(); i++) {
+                newPopulation[i] = 1.0;
+                for (int j = 0; j < competitor.size(); j++) {
+                    newPopulation[i] += population[j] * resultTable[i][j];
+                }
+                newPopulation[i] *= population[i];
+            }
+
+            population = newPopulation;
+
+            double total = Arrays.stream(population).sum();
+            for (int i = 0; i < competitor.size(); i++) {
+                population[i] /= total;
+            }
+        }
+
         List<String> names = new ArrayList<>(competitor.stream().map(c -> c.Name()).toList());
-        List<Double> points = new ArrayList<>(Arrays.stream(resultTable).map(xs -> Arrays.stream(xs).sum()).toList());
+        List<Double> points = new ArrayList<>(competitor.size());
+
+        for (int i = 0; i < competitor.size(); i++) {
+            points.add(population[i]);
+        }
 
         List<String> orderedNames = new ArrayList<>();
         List<Double> orderedPoints = new ArrayList<>();
